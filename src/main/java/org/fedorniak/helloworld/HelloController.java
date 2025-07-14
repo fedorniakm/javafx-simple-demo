@@ -5,19 +5,17 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class HelloController {
 
-    private final int ROTATION_SLEEP_MS = 50; // for the rotation smoothness
-    private final int ROTATION_MIN_ANGLE = 5;
-    private final int ROTATION_MAX_ANGLE = 100;
+    private final int ROTATION_SLEEP_MS = 50;   // for the rotation smoothness
+    private final int ROTATION_MIN_ANGLE = 5;   // min rotation speed
+    private final int ROTATION_MAX_ANGLE = 100; // max rotation speed
+
+    private final ExecutorService executor;
 
     private final Label speedText;
-
     private final Rectangle rec;
 
     private Future<?> rotationProc;
@@ -25,32 +23,35 @@ public class HelloController {
     public HelloController(Label speedText, Rectangle rec) {
         this.speedText = speedText;
         this.rec = rec;
+        this.executor = Executors.newSingleThreadExecutor();
     }
 
     public void onRotateButtonClick() {
+        stopRotation();
         int speed = ThreadLocalRandom.current().nextInt(ROTATION_MIN_ANGLE, ROTATION_MAX_ANGLE);
-        speedText.setText("Speed: " + speed);
+        updateSpeedLabel(speed);
         setRandomColorToRec();
-        onStopButtonClick();
-        rotationProc = Executors.newSingleThreadScheduledExecutor().submit(
-                () -> {
-                    this.rotateRectangle(speed);
-                    Thread.currentThread().setDaemon(true);
-                });
+        rotationProc = executor.submit(
+                () -> this.rotateRectangle(speed));
     }
 
     public void onStopButtonClick() {
+        stopRotation();
+    }
+
+    public void onResetButtonClick() {
+        stopRotation();
+        rec.setRotate(0d);
+    }
+
+    private void stopRotation() {
         if (Objects.nonNull(rotationProc) && !rotationProc.isDone())
             rotationProc.cancel(true);
     }
 
-    public void onResetButtonClick() {
-        onStopButtonClick();
-        rec.setRotate(0d);
-    }
-
     private void setRandomColorToRec() {
-        rec.setFill(Color.rgb(ThreadLocalRandom.current().nextInt(255),
+        rec.setFill(Color.rgb(
+                ThreadLocalRandom.current().nextInt(255),
                 ThreadLocalRandom.current().nextInt(255),
                 ThreadLocalRandom.current().nextInt(255)));
     }
@@ -65,5 +66,9 @@ public class HelloController {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void updateSpeedLabel(int speed) {
+        speedText.setText("Speed: " + speed);
     }
 }
