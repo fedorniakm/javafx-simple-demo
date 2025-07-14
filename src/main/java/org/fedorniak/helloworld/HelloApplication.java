@@ -7,11 +7,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class HelloApplication extends Application {
+
+    private HelloController controller;
 
     @Override
     public void start(Stage stage) {
@@ -24,28 +27,33 @@ public class HelloApplication extends Application {
         recBox.setMinHeight(300);
         recBox.setAlignment(Pos.CENTER);
 
-        var controller = new HelloController(speedLabel, rec);
+        controller = new HelloController(speedLabel, rec);
 
-        var rotateButton = new Button("Rotate!");
-        rotateButton.setOnAction(event -> controller.onRotateButtonClick());
-        var stopButton = new Button("Stop!");
-        stopButton.setOnAction(event -> controller.onStopButtonClick());
-        var resetButton = new Button("Reset");
-        resetButton.setOnAction(event -> controller.onResetButtonClick());
-        var buttons = new HBox(50, rotateButton, stopButton, resetButton);
-        buttons.setAlignment(Pos.CENTER);
-
-        var parent = new VBox(20, buttons, labelBox, recBox);
+        var buttonsBox = getButtons();
+        var parent = new VBox(20, buttonsBox, labelBox, recBox);
         parent.setAlignment(Pos.CENTER);
 
         Scene scene = new Scene(parent, 800, 600);
-        stage.setTitle("Maksym Fedorniak Test Task");
+        stage.setTitle("Java FX Demo");
         stage.setScene(scene);
         stage.setOnCloseRequest(e -> {
             Platform.exit();
             System.exit(0);
         });
         stage.show();
+    }
+
+    private Pane getButtons() {
+        var rotateButton = new Button("Rotate!");
+        var stopButton = new Button("Stop!");
+        var resetButton = new Button("Reset");
+        rotateButton.setOnAction(event -> controller.onRotateButtonClick());
+        stopButton.setOnAction(event -> controller.onStopButtonClick());
+        resetButton.setOnAction(event -> controller.onResetButtonClick());
+
+        var buttons = new HBox(50, rotateButton, stopButton, resetButton);
+        buttons.setAlignment(Pos.CENTER);
+        return buttons;
     }
 
     public static void main(String[] args) {
